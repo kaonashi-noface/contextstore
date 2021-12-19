@@ -2,9 +2,20 @@ import { SinonSandbox, createSandbox } from 'sinon';
 
 import { NotificationService, NotificationServiceContext } from '@mocks/NotificationService.mock';
 import { UserDatabase, UserDatabaseContext } from '@mocks/UserDatabase.mock';
-import { EmailClient, EmailClientContext } from '@mocks/EmailClient.mock';
+import { EmailClientContext } from '@mocks/EmailClient.mock';
+
+import {
+    MultiStack,
+    TopContextOne,
+    ContextOneA,
+    ContextOneB,
+    TopContextTwo,
+    ContextTwoA,
+    ContextTwoB,
+} from '@mocks/MultiStack.mock';
 
 import { Context } from '@src/Context';
+import { CallStack } from '@src/CallStack';
 
 describe('@Context Unit TestSuite', () => {
     const sandbox: SinonSandbox = createSandbox();
@@ -38,14 +49,33 @@ describe('@Context Unit TestSuite', () => {
     });
 
     it('should successfully synchronize contexts for a multiple call stacks', async () => {
-        const notifyUserSpy = sandbox.spy(NotificationService.prototype, 'notifyUser');
         const getContextSpy = sandbox.spy(Context, 'get');
 
-        const userTrace1 = 'username1';
-        const userTrace2 = 'username2';
-        await Promise.all([service.notifyUser(userTrace1), service.notifyUser(userTrace2)]);
+        const mockService = new MultiStack();
 
-        // TODO: finish assertions...
+        await Promise.all([mockService.callOne(), mockService.callTwo()]);
+
+        const contexts = getContextSpy.returnValues;
+
+        const stackOne = new CallStack();
+        stackOne.push(TopContextOne);
+        stackOne.push(ContextOneA);
+        expect(contexts).toContainEqual(stackOne.getContext());
+        stackOne.pop();
+        stackOne.push(ContextOneB);
+        expect(contexts).toContainEqual(stackOne.getContext());
+        stackOne.pop();
+        expect(contexts).toContainEqual(stackOne.getContext());
+
+        const stackTwo = new CallStack();
+        stackTwo.push(TopContextTwo);
+        stackTwo.push(ContextTwoA);
+        expect(contexts).toContainEqual(stackTwo.getContext());
+        stackTwo.pop();
+        stackTwo.push(ContextTwoB);
+        expect(contexts).toContainEqual(stackTwo.getContext());
+        stackTwo.pop();
+        expect(contexts).toContainEqual(stackTwo.getContext());
     });
 
     it('should successfully throw Error from inner function', async () => {
