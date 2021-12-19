@@ -21,13 +21,15 @@
     },
     "keywords": [
         "nodejs",
+        "decorator",
+        "annotation",
         "ctx",
         "context",
         "local",
         "store",
         "storage",
-        "decorator",
-        "annotation"
+        "hook",
+        "stack"
     ],
     "license": "ISC",
     "devDependencies": {
