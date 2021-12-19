@@ -1,18 +1,18 @@
-# contextstore
-<a href="https://app.circleci.com/pipelines/github/kaonashi-noface/contextstore?branch=main&filter=all">
-    <img src="https://circleci.com/gh/kaonashi-noface/contextstore.svg?style=svg" alt="CircleCI Build" />
+# ctxstore
+<a href="https://app.circleci.com/pipelines/github/kaonashi-noface/ctxstore?branch=main&filter=all">
+    <img src="https://circleci.com/gh/kaonashi-noface/ctxstore.svg?style=svg" alt="CircleCI Build" />
 </a>
-<a href='https://coveralls.io/github/kaonashi-noface/contextstore?branch=main'>
-    <img src='https://coveralls.io/repos/github/kaonashi-noface/contextstore/badge.svg?branch=main' alt='Code Coverage' />
+<a href='https://coveralls.io/github/kaonashi-noface/ctxstore?branch=main'>
+    <img src='https://coveralls.io/repos/github/kaonashi-noface/ctxstore/badge.svg?branch=main' alt='Code Coverage' />
 </a>
-<a href='https://www.npmjs.com/package/contextstore'>
-    <img alt="npm version" src="https://img.shields.io/npm/v/contextstore" />
+<a href='https://www.npmjs.com/package/ctxstore'>
+    <img alt="npm version" src="https://img.shields.io/npm/v/ctxstore" />
 </a>
-<a href='https://www.npmjs.com/package/contextstore'>
-    <img alt="license" src="https://img.shields.io/npm/l/contextstore" />
+<a href='https://www.npmjs.com/package/ctxstore'>
+    <img alt="license" src="https://img.shields.io/npm/l/ctxstore" />
 </a>
-<a href='https://www.npmjs.com/package/contextstore'>
-    <img alt="downloads" src="https://img.shields.io/npm/dm/contextstore" />
+<a href='https://www.npmjs.com/package/ctxstore'>
+    <img alt="downloads" src="https://img.shields.io/npm/dm/ctxstore" />
 </a>
 
 A context decorator library designed for nodejs that harmonizes contexts within a call stack.
@@ -53,7 +53,7 @@ await Promise.all([
 ]);
 ```
 
-Handling multiple asynchronous functions will result in an upredictable resolution order. There is no guarantee which top level or inner async call will finish first or in what order. `contextstore` aims to associate the invocation instance to the correct "frame of reference", even if some function calls are shared (e.g. `foo()` and `bar()` both invoke `a()`).
+Handling multiple asynchronous functions will result in an upredictable resolution order. There is no guarantee which top level or inner async call will finish first or in what order. `ctxstore` aims to associate the invocation instance to the correct "frame of reference", even if some function calls are shared (e.g. `foo()` and `bar()` both invoke `a()`).
 
 Proposed usage of Context Frame:
 ```ts
@@ -78,7 +78,7 @@ class NotificationService {
     notifyUsers() { /*...notify users...*/ }
 }
 
-import { Context } from 'contextstore';
+import { Context } from 'ctxstore';
 
 class Lambda {
     private userService: UserService;
@@ -99,4 +99,4 @@ class Lambda {
 await new Lambda().handler(/*...params...*/);
 ```
 
-The parameter annotation `@Context context` will create the root of the Context tree because `contextstore` will recognize this call stack does not have a Context Frame initialized. `contextstore` will create and associate a Context with the correct "frame of reference" everytime a new function is invoked with the `@Context` annotation.
+The parameter annotation `@Context context` will create the root of the Context tree because `ctxstore` will recognize this call stack does not have a Context Frame initialized. `ctxstore` will create and associate a Context with the correct "frame of reference" everytime a new function is invoked with the `@Context` annotation.
