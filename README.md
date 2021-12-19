@@ -15,7 +15,7 @@
     <img alt="downloads" src="https://img.shields.io/npm/dm/contextstore" />
 </a>
 
-A context decorator library designed for nodejs that harmonizes context within a call stack.
+A context decorator library designed for nodejs that harmonizes contexts within a call stack.
 
 > WARNING: This module does not yet have any functionality.
 > 
