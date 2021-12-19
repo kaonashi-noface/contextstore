@@ -1,7 +1,7 @@
 {
     "name": "ctxstore",
     "version": "0.0.1",
-    "description": "A context decorator library designed for nodejs that harmonizes contexts within a call stack.",
+    "description": "A context decorator library designed for nodejs that synchronizes contexts within a call stack.",
     "author": {
         "name": "no_face"
     },
@@ -33,10 +33,12 @@
     "devDependencies": {
         "@types/jest": "^27.0.3",
         "@types/node": "^16.11.13",
+        "@types/sinon": "^10.0.6",
         "copy-webpack-plugin": "^10.1.0",
         "coveralls": "^3.1.1",
         "jest": "^27.4.5",
         "jest-junit": "^13.0.0",
+        "sinon": "^12.0.1",
         "ts-jest": "^27.1.1",
         "ts-loader": "^9.2.6",
         "ts-node": "^10.4.0",

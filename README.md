@@ -1,4 +1,5 @@
 # ctxstore
+
 <a href="https://app.circleci.com/pipelines/github/kaonashi-noface/ctxstore?branch=main&filter=all">
     <img src="https://circleci.com/gh/kaonashi-noface/ctxstore.svg?style=svg" alt="CircleCI Build" />
 </a>
@@ -15,16 +16,18 @@
     <img alt="downloads" src="https://img.shields.io/npm/dm/ctxstore" />
 </a>
 
-A context decorator library designed for nodejs that harmonizes contexts within a call stack.
+A context decorator library designed for nodejs that synchronizes contexts within a call stack.
 
 > WARNING: This module does not yet have any functionality.
-> 
+>
 > Please do not install this module and expect it to work until you see v1.0.0.
 
 # Proposal
+
 ContextStore treats the context objects similar to function call stacks. A child Context will be attached to Context associated with the current call stack whenever a function tagged with the `@Context` annotation is invoked.
 
 Let's assume the following:
+
 ```ts
 class Example {
     @Context()
@@ -43,39 +46,47 @@ class Example {
     }
 
     @Context()
-    async b() { /*...*/ }
+    async b() {
+        /*...*/
+    }
 }
 
 const example = new Example();
-await Promise.all([
-    example.foo(),
-    example.bar(),
-]);
+await Promise.all([example.foo(), example.bar()]);
 ```
 
 Handling multiple asynchronous functions will result in an upredictable resolution order. There is no guarantee which top level or inner async call will finish first or in what order. `ctxstore` aims to associate the invocation instance to the correct "frame of reference", even if some function calls are shared (e.g. `foo()` and `bar()` both invoke `a()`).
 
 Proposed usage of Context Frame:
+
 ```ts
 class SNSClient {
     private sns: SNS;
-    
+
     @Context({ spanName: 'SNS:NotifyUsers' })
     publish(event) {
-        return sns.publish({ /*...event...*/ }).promise();
+        return sns
+            .publish({
+                /*...event...*/
+            })
+            .promise();
     }
 }
 
 class UserService {
     @Context({ spanName: 'UserService:getUsers' })
-    getUsers(event) { /*...get users...*/ }
+    getUsers(event) {
+        /*...get users...*/
+    }
 }
 
 class NotificationService {
     private snsClient: SNSClient;
 
     @Context({ spanName: 'NotificationService:notifyUsers' })
-    notifyUsers() { /*...notify users...*/ }
+    notifyUsers() {
+        /*...notify users...*/
+    }
 }
 
 import { Context } from 'ctxstore';
@@ -84,14 +95,16 @@ class Lambda {
     private userService: UserService;
     private notificationService: NotificationService;
 
-    constructor() { /*...setup lambda...*/ }
+    constructor() {
+        /*...setup lambda...*/
+    }
 
     async handler(event, @Context context) {
         const users: User[] = await userService.getUsers(event);
         await notificationService.notifyUsers(users, event);
         return {
-            statusCode: 200
-        }
+            statusCode: 200,
+        };
     }
 }
 

@@ -1,26 +1,26 @@
-class CallStack {
-    private stack: Array<object>;
+class CallStack<T extends object> {
+    private stack: Array<T>;
 
     constructor() {
         this.stack = [];
     }
 
-    push(context: object): void {
+    push(context: T): void {
         if (this.isEmpty()) {
             this.stack.push(context);
-        } else {
-            const currentContext = { ...context };
-            const top = this.stack[this.stack.length - 1];
-            for (const key of Object.keys(top)) {
-                if (!currentContext[key]) {
-                    currentContext[key] = top[key];
-                }
-            }
-            this.stack.push(currentContext);
+            return;
         }
+        const currentContext = { ...context };
+        const top = this.stack[this.stack.length - 1];
+        for (const key of Object.keys(top)) {
+            if (!currentContext[key]) {
+                currentContext[key] = top[key];
+            }
+        }
+        this.stack.push(currentContext);
     }
 
-    pop(): object {
+    pop(): T {
         return this.stack.pop();
     }
 
@@ -28,7 +28,7 @@ class CallStack {
         return 0 === this.stack.length;
     }
 
-    getContext(): object {
+    getContext(): T {
         if (this.isEmpty()) {
             return null;
         }
