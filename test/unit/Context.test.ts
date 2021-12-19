@@ -7,9 +7,7 @@ function sleep(ms: number) {
 class EmailClient {
     @Context({ spanName: 'sendEmail' })
     async sendEmail(id: number) {
-        // console.log(JSON.stringify(Context.get(), null, 4));
         await sleep(100);
-        console.log('Got Users...');
     }
 }
 
@@ -21,7 +19,6 @@ class UserService {
 
     @Context({ spanName: 'getUser' })
     async getUser(id: number) {
-        // console.log(JSON.stringify(Context.get(), null, 4));
         await sleep(100);
         return {
             username: 'username12345',
@@ -32,7 +29,6 @@ class UserService {
 
     @Context({ spanName: 'notifyUser1' })
     async notifyUser1(id: number) {
-        // console.log(JSON.stringify(Context.get(), null, 4));
         await sleep(2500);
         const user = await this.getUser(id);
         await this.client.sendEmail(id);
@@ -40,18 +36,10 @@ class UserService {
 
     @Context({ spanName: 'notifyUser2' })
     async notifyUser2(id: number) {
-        console.log(JSON.stringify(Context.get(), null, 4));
         const user = await this.getUser(id);
-        console.log(JSON.stringify(Context.get(), null, 4));
         await sleep(5000);
         await this.client.sendEmail(id);
-        console.log(JSON.stringify(Context.get(), null, 4));
     }
-
-    // @Context({ spanName: 'initializeService' })
-    // initializeService() {
-    //     return 5;
-    // }
 }
 
 (async () => {

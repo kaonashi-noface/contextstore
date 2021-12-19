@@ -50,18 +50,4 @@ Context.get = function (): object {
     return callStack.getContext();
 };
 
-Context.using = function (context: object) {
-    const ctxStore = ContextStore.getLocalStorage();
-    if (!ctxStore.getStore()) {
-        return ctxStore.run(new CallStack(), () => {
-            const stack: CallStack = ContextStore.getLocalStorage().getStore();
-            stack.push(context);
-            return stack.getContext();
-        });
-    }
-    const stack: CallStack = ctxStore.getStore();
-    stack.push(context);
-    return stack.getContext();
-};
-
 export { Context };
