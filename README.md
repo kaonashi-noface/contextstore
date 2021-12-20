@@ -1,10 +1,10 @@
 # ctxstore
 
-<a href="https://app.circleci.com/pipelines/github/kaonashi-noface/ctxstore?branch=main&filter=all">
-    <img src="https://circleci.com/gh/kaonashi-noface/ctxstore.svg?style=svg" alt="CircleCI Build" />
+<a href="https://app.circleci.com/pipelines/github/kaonashi-noface/contextstore?branch=main&filter=all">
+    <img src="https://circleci.com/gh/kaonashi-noface/contextstore.svg?style=svg" alt="CircleCI Build" />
 </a>
-<a href='https://coveralls.io/github/kaonashi-noface/ctxstore?branch=main'>
-    <img src='https://coveralls.io/repos/github/kaonashi-noface/ctxstore/badge.svg?branch=main' alt='Code Coverage' />
+<a href='https://coveralls.io/github/kaonashi-noface/contextstore?branch=main'>
+    <img src='https://coveralls.io/repos/github/kaonashi-noface/contextstore/badge.svg?branch=main' alt='Code Coverage' />
 </a>
 <a href='https://www.npmjs.com/package/ctxstore'>
     <img alt="npm version" src="https://img.shields.io/npm/v/ctxstore" />
