@@ -4,7 +4,7 @@ import { CallStack } from './CallStack';
 /**
  * @class ContextStore
  * @classdesc singleton wrapper for the node `AsyncLocalStorage` hook module.
- * ContextStore is user internally by the `@Context` decorator.
+ * ContextStore is used internally by the `@Context` decorator.
  */
 declare class ContextStore {
     private static CONTEXT_STORE: AsyncLocalStorage<CallStack<object>>;
