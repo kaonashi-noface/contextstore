@@ -1,3 +1,9 @@
+# 1.0.2 / 2021-12-19
+
+### Bugs
+
+-   Fix Git repository url(s) in the package.json
+
 # 1.0.1 / 2021-12-19
 
 ### Bugs

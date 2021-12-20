@@ -1,14 +1,14 @@
 {
     "name": "ctxstore",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "A context decorator library designed for nodejs that synchronizes contexts within a call stack.",
     "author": {
         "name": "no_face"
     },
-    "homepage": "https://github.com/kaonashi-noface/ctxstore",
+    "homepage": "https://github.com/kaonashi-noface/contextstore",
     "repository": {
         "type": "git",
-        "url": "https://github.com/kaonashi-noface/ctxstore.git"
+        "url": "https://github.com/kaonashi-noface/contextstore.git"
     },
     "main": "src/index.js",
     "types": "@types/index.d.ts",
