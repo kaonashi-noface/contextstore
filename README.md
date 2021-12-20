@@ -16,100 +16,204 @@
     <img alt="downloads" src="https://img.shields.io/npm/dm/ctxstore" />
 </a>
 
-A context decorator library designed for nodejs that synchronizes contexts within a call stack.
+# About
 
-> WARNING: This module does not yet have any functionality.
->
-> Please do not install this module and expect it to work until you see v1.0.0.
+ContextStore (`ctxstore`) is a context decorator library designed for nodejs that synchronizes contexts within a call stack.
 
-# Proposal
+> Disclaimer: This module has not been tested for multithreading nor designed with multithreading in mind.
 
-ContextStore treats the context objects similar to function call stacks. A child Context will be attached to Context associated with the current call stack whenever a function tagged with the `@Context` annotation is invoked.
+# Installation
 
-Let's assume the following:
+Installing with npm:
 
-```ts
-class Example {
-    @Context()
-    async foo() {
-        await this.a();
-    }
-
-    @Context()
-    async bar() {
-        await this.a();
-    }
-
-    @Context()
-    async a() {
-        await this.b();
-    }
-
-    @Context()
-    async b() {
-        /*...*/
-    }
-}
-
-const example = new Example();
-await Promise.all([example.foo(), example.bar()]);
+```bash
+npm i ctxstore
 ```
 
-Handling multiple asynchronous functions will result in an upredictable resolution order. There is no guarantee which top level or inner async call will finish first or in what order. `ctxstore` aims to associate the invocation instance to the correct "frame of reference", even if some function calls are shared (e.g. `foo()` and `bar()` both invoke `a()`).
+# Usage
 
-Proposed usage of Context Frame:
+## @Context decorator
+
+Use the `@Context` decorator to associate a context object with a scope:
 
 ```ts
-class SNSClient {
-    private sns: SNS;
-
-    @Context({ spanName: 'SNS:NotifyUsers' })
-    publish(event) {
-        return sns
-            .publish({
-                /*...event...*/
-            })
-            .promise();
-    }
-}
-
-class UserService {
-    @Context({ spanName: 'UserService:getUsers' })
-    getUsers(event) {
-        /*...get users...*/
-    }
-}
-
-class NotificationService {
-    private snsClient: SNSClient;
-
-    @Context({ spanName: 'NotificationService:notifyUsers' })
-    notifyUsers() {
-        /*...notify users...*/
-    }
-}
-
 import { Context } from 'ctxstore';
 
-class Lambda {
-    private userService: UserService;
-    private notificationService: NotificationService;
+class NotificationService {
+    private userDb: UserDatabase = new UserDatabase();
+    private emailClient: EmailClient = new EmailClient();
 
-    constructor() {
-        /*...setup lambda...*/
+    @Context({
+        // Associate a context to a scope
+        spanName: 'NotificationService:notifyUser(...)',
+        endpoint: '/notify/user/{username}',
+    })
+    async notifyUser(username: string): Promise<object> {
+        await this.userDb.getUser(username);
+        await this.emailClient.publish(username);
+        return Context.get(); // retrieve the context for this scope
+    }
+}
+```
+
+In this example, a context is being associated with the `async notifyUser(username: string): Promise<object>` method. This means that any function invoked in scope of `notifyUser(...) { }` will have access to the context(s) defined in `@Context(...)`. You can use the `Context.get` method to retrieve the context for a function (e.g. `notifyUser(...) { }`) as long as at least one ancestor function in the same call stack defines a context with `@Context(...)`.
+
+```ts
+import { Context } from 'ctxstore';
+
+class ExampleService {
+    @Context({
+        message: 'hello world',
+    })
+    method(): string {
+        return this.innerOne();
     }
 
-    async handler(event, @Context context) {
-        const users: User[] = await userService.getUsers(event);
-        await notificationService.notifyUsers(users, event);
+    innerOne() {
+        return this.innerTwo();
+    }
+
+    innerTwo() {
+        return Context.get(); // <--- returns 'hello world'
+    }
+}
+```
+
+In the example above, `Context.get()` will still have access to `method()`'s context because the inner methods are within `method()`'s scope.
+
+# Understanding
+
+ContextStore handles the management of a Context object similar to how function lifecycles are managed in a CallStack/ StackFrame. When a function completes, its stack frame is naturally popped off the call stack; `@Context` functions the same way. When a method with a `@Context` is invoked, the context object is pushed onto a CallStack. When a method with a `@Context` `completes` (irrespective of whether it's synchronous or asynchronous), the context object is popped off the CallStack. Incoming context object keys take precedence over context objects existing on the CallStack. If the incoming context and the context located at the top of the stack both share the same key, the value of the incoming context object will "mask" the value of the context on the stack.
+
+> NOTE: A `CallStack` object is instantiated when the `@Context` decorator is encountered for the first time in a call stack trace.
+
+Let's take a look at the following examples.
+
+`class UserDatabase`:
+
+```ts
+class UserDatabase {
+    @Context({
+        subspanName: 'Database:User',
+        connector: 'aurora:postgresql',
+        table: 'user_table',
+    })
+    getUser(username: string): Promise<object> {
+        return Promise.resolve(Context.get());
+    }
+}
+```
+
+`class EmailClient`:
+
+```ts
+class EmailClient {
+    @Context({
+        subspanName: 'Client:Email',
+        connector: 'sns:topic',
+        datatype: 'json',
+    })
+    publish(username: string): Promise<object> {
+        return Promise.resolve(Context.get());
+    }
+}
+```
+
+`class NotificationService`:
+
+```ts
+class NotificationService {
+    private userDb: UserDatabase = new UserDatabase();
+    private emailClient: EmailClient = new EmailClient();
+
+    @Context({
+        spanName: 'NotificationService:notifyUser(...)',
+        endpoint: '/notify/user/{username}',
+    })
+    async notifyUser(username: string): Promise<object> {
+        await this.userDb.getUser(username);
+        await this.emailClient.publish(username);
+        return Context.get();
+    }
+}
+```
+
+If we invoke `notifyUser`:
+
+```ts
+await notifyUser('userId123');
+```
+
+The context object returned by `Context.get()` inside of `notifyUser` will be:
+
+```ts
+async notifyUser(username: string): Promise<object> {
+    ...
+    const ctx = Context.get();
+    ctx will be:
+    {
+        spanName: 'NotificationService:notifyUser(...)',
+        endpoint: '/notify/user/{username}',
+    };
+}
+```
+
+The context object returned by `Context.get()` inside of `getUser` will be:
+
+```ts
+getUser(username: string): Promise<object> {
+    ...
+    const ctx = Context.get();
+    ctx will be:
+    {
+        spanName: 'NotificationService:notifyUser(...)',
+        endpoint: '/notify/user/{username}',
+        subspanName: 'Database:User',
+        connector: 'aurora:postgresql',
+        table: 'user_table',
+    };
+}
+```
+
+If `getUser`'s context had a `spanName` property (e.g. `UserDatabase:getUser(...)`), then `getUser`'s `spanName` property would override the context from `notifyUser`.
+
+If we attempt to concurrently handle multiple `notifyUser` invocations:
+
+```ts
+await Promise.all([notifyUser('userId123'), notifyUser('userId456')]);
+```
+
+A context CallStack is instantiated per `notifyUser` invocation since this is the first usage of `@Context` within this context scope. Although asynchronous function resolutions (inner and top level) are unpredictable, `ctxstore` is capable of synchronizing contexts with their associated CallStacks. In other words, contexts won't get jumbled/ mixed up despite the chaotic nature of asynchrony.
+
+# Upcoming Features
+
+## function Context(target: Object, propertyKey: string | symbol, parameterIndex: number) : void
+
+There is a compelling reason to support `@Context` as a parameter decorator.
+
+```ts
+class Lambda {
+    private userDb: UserDatabase = new UserDatabase();
+    private emailClient: EmailClient = new EmailClient();
+
+    @Context({
+        method: 'GET',
+        path: '/organization/{organization}/user/{userId}',
+    })
+    async handler(event, @Context context): Promise<Response> {
+        logger.info('Start Trace Logging...', { trace, context});
         return {
-            statusCode: 200,
+            body: {
+                ...
+            },
+            statusCode: ...
         };
     }
 }
-
-// entry point:
-await new Lambda().handler(/*...params...*/);
 ```
 
-The parameter annotation `@Context context` will create the root of the Context tree because `ctxstore` will recognize this call stack does not have a Context Frame initialized. `ctxstore` will create and associate a Context with the correct "frame of reference" everytime a new function is invoked with the `@Context` annotation.
+Supporting parameter decorators reduces the overhead of boilerplate and complexity for the user. Unfortunately, parameter decorators do not function similarly to CallStacks, there is no way to determine when the decorated function has completed from the perspective of a parameter decorator. This makes management of a context trace difficult.
+
+# License
+
+Copyright 2021. Licensed [MIT](https://github.com/kaonashi-noface/contextstore/blob/main/LICENSE).
