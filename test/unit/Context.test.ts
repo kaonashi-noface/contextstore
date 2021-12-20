@@ -13,6 +13,7 @@ import {
     ContextTwoA,
     ContextTwoB,
 } from '@mocks/MultiStack.mock';
+import { DeepStackMock, MockContext } from '@mocks/DeepStack.mock';
 
 import { Context } from '@src/Context';
 import { CallStack } from '@src/CallStack';
@@ -78,12 +79,39 @@ describe('@Context Unit TestSuite', () => {
         expect(contexts).toContainEqual(stackTwo.getContext());
     });
 
-    it('should successfully throw Error from inner function', async () => {
+    it('should successfully get context for deeply nested function', () => {
+        const mockService = new DeepStackMock();
+        const actualCtx = mockService.method();
+        expect(actualCtx).toEqual(MockContext);
+    });
+
+    it('should not return context when used outside of the @Context scope', async () => {
+        const context = Context.get();
+        expect(context).toBeNull;
+    });
+
+    it('should successfully throw Error from async inner function', async () => {
         const expectedError = new Error('Stubbed Error');
         sandbox.stub(UserDatabase.prototype, 'getUser').rejects(expectedError);
 
         try {
             await service.notifyUser('someusername');
+        } catch (err) {
+            expect(err).toBeInstanceOf(Error);
+            expect(err.name).toEqual(expectedError.name);
+            expect(err.message).toEqual(expectedError.message);
+            return;
+        }
+        fail(`Should throw ${expectedError.message} from inner function.`);
+    });
+
+    it('should successfully throw Error from sync inner function', () => {
+        const expectedError = new Error('Stubbed Error From Deeply Nested Function');
+        sandbox.stub(DeepStackMock.prototype, 'innerThree').throws(expectedError);
+        const mockService = new DeepStackMock();
+
+        try {
+            mockService.method();
         } catch (err) {
             expect(err).toBeInstanceOf(Error);
             expect(err.name).toEqual(expectedError.name);

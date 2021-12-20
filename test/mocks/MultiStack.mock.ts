@@ -39,12 +39,12 @@ class MultiStack {
     }
 
     @Context(ContextOneA)
-    callOneA(): Promise<object> {
+    private callOneA(): Promise<object> {
         return Promise.resolve(Context.get());
     }
 
     @Context(ContextOneB)
-    callOneB(): object {
+    private callOneB(): object {
         return Context.get();
     }
 
@@ -56,12 +56,12 @@ class MultiStack {
     }
 
     @Context(ContextTwoA)
-    callTwoA(): object {
+    private callTwoA(): object {
         return Context.get();
     }
 
     @Context(ContextTwoB)
-    callTwoB(): Promise<object> {
+    private callTwoB(): Promise<object> {
         return Promise.resolve(Context.get());
     }
 }

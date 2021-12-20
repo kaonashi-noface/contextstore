@@ -10,6 +10,7 @@ class ContextStore {
         return ContextStore.CONTEXT_STORE;
     }
 
+    /* istanbul ignore next */
     private constructor() {}
 }
 
